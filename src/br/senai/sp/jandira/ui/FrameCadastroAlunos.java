@@ -1,6 +1,10 @@
 package br.senai.sp.jandira.ui;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -11,15 +15,31 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
+import br.senai.sp.jandira.model.Aluno;
 import br.senai.sp.jandira.model.Periodo;
+import br.senai.sp.jandira.repository.AlunoRepository;
 
 public class FrameCadastroAlunos extends JFrame {
 
 	private JPanel contentPane;
 	private JTextField txtMatricula;
 	private JTextField txtNome;
+	
+	private int posicao = 0;
 
 	public FrameCadastroAlunos() {
+		
+		//Jeito diferente de fazer vetor
+		String[] diasDaSemana = {
+				"Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"
+		};
+		
+		//Jeito diferente de fazer o for
+		/*for (String dia : diasDaSemana) {
+			System.out.println(dia);		
+		}*/
+		
+		setTitle("Cadastro de Alunos");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		contentPane = new JPanel();
@@ -50,8 +70,13 @@ public class FrameCadastroAlunos extends JFrame {
 		contentPane.add(lblPeriodo);
 		
 		JComboBox comboPeriodo = new JComboBox();
-		comboPeriodo.setModel(new DefaultComboBoxModel(Periodo.values()));
-		comboPeriodo.setBounds(66, 103, 85, 22);
+		DefaultComboBoxModel<String> modelPeriodo = 
+				new DefaultComboBoxModel<String>();
+		for (Periodo p : Periodo.values()) {
+			modelPeriodo.addElement(p.getDescricao());
+		}
+		comboPeriodo.setModel(modelPeriodo);
+		comboPeriodo.setBounds(66, 103, 102, 22);
 		contentPane.add(comboPeriodo);
 		
 		JButton btnSalvarAluno = new JButton("Salvar Aluno");
@@ -67,6 +92,50 @@ public class FrameCadastroAlunos extends JFrame {
 		contentPane.add(scrollPane);
 		
 		JList listAlunos = new JList();
+		DefaultListModel<String> listaModel = new DefaultListModel<String>();
+		listAlunos.setModel(listaModel);
 		scrollPane.setViewportView(listAlunos);
+		
+		JButton btnExibirAlunos = new JButton("Exibir Alunos");
+		btnExibirAlunos.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
+		btnExibirAlunos.setBounds(90, 205, 104, 23);
+		contentPane.add(btnExibirAlunos);
+		
+		AlunoRepository turma = new AlunoRepository(3);
+		
+		btnSalvarAluno.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				
+				Aluno aluno = new Aluno();
+				aluno.setMatricula(txtMatricula.getText());
+				aluno.setNome(txtNome.getText());
+				
+				turma.gravar(aluno, posicao);
+				
+				posicao++;
+				
+				//Adicionando o nome do aluno ao model da lista
+				listaModel.addElement(aluno.getNome());
+			}
+		});
+		
+		btnExibirAlunos.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				for (Aluno aluno : turma.listarTodos()) {
+					System.out.println(aluno.getMatricula());
+					System.out.println(aluno.getNome());
+					System.out.println("----------------------");
+				}
+				
+			}
+		});
+	
+		}
 	}
-}
