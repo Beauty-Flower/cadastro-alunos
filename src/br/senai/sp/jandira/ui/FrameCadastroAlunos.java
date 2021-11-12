@@ -2,7 +2,11 @@ package br.senai.sp.jandira.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.beans.PropertyChangeListener;
 
+import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -10,10 +14,13 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import br.senai.sp.jandira.model.Aluno;
 import br.senai.sp.jandira.model.Periodo;
@@ -115,12 +122,20 @@ public class FrameCadastroAlunos extends JFrame {
 				aluno.setMatricula(txtMatricula.getText());
 				aluno.setNome(txtNome.getText());
 				
+				//Definir o horário que o aluno estuda
+				aluno.setPeriodo(determinarPeriodo(comboPeriodo.getSelectedIndex()));
+			    
 				turma.gravar(aluno, posicao);
 				
 				posicao++;
 				
 				//Adicionando o nome do aluno ao model da lista
 				listaModel.addElement(aluno.getNome());
+				
+				if (posicao == turma.getTamanho()) {
+					btnSalvarAluno.setEnabled(false);
+					JOptionPane.showMessageDialog(null, "A turma já está cheia!!", "Turma cheia!", JOptionPane.WARNING_MESSAGE);
+				}
 			}
 		});
 		
@@ -131,11 +146,33 @@ public class FrameCadastroAlunos extends JFrame {
 				for (Aluno aluno : turma.listarTodos()) {
 					System.out.println(aluno.getMatricula());
 					System.out.println(aluno.getNome());
+					System.out.println(aluno.getPeriodo().getDescricao());
 					System.out.println("----------------------");
 				}
 				
 			}
 		});
+		
+		listAlunos.addListSelectionListener(new ListSelectionListener() {
+			
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				Aluno alunoSelecionado = turma.listarAluno(listAlunos.getSelectedIndex());
+				txtMatricula.setText(alunoSelecionado.getMatricula());
+				txtNome.setText(alunoSelecionado.getNome());
+				comboPeriodo.setSelectedIndex(alunoSelecionado.getPeriodo().ordinal());
+			}
+		});
 	
 		}
+	
+	    private Periodo determinarPeriodo(int periodoSelecionado) {
+		    if (periodoSelecionado == 0) {
+		    	return Periodo.MANHA;
+		    } else if (periodoSelecionado == 1) {
+		    	return Periodo.TARDE;
+		    } else {
+		    	return Periodo.NOITE;
+		    }
+	    }
 	}
